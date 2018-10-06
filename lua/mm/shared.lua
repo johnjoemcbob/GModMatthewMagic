@@ -32,10 +32,10 @@ end
 local files, directories = file.Find( "lua/mm/runes/*", "GAME" )
 for k, file in pairs( files ) do
 	print( "mm/runes/" .. file )
-	include( "mm/runes/" .. file )
 	if ( SERVER ) then
 		AddCSLuaFile( "mm/runes/" .. file )
 	end
+	include( "mm/runes/" .. file )
 end
 
 -- <<<<<<<<<<<<<<<<
@@ -50,10 +50,10 @@ end
 local files, directories = file.Find( "lua/mm/wops/*", "GAME" )
 for k, file in pairs( files ) do
 	print( "mm/wops/" .. file )
-	include( "mm/wops/" .. file )
 	if ( SERVER ) then
 		AddCSLuaFile( "mm/wops/" .. file )
 	end
+	include( "mm/wops/" .. file )
 end
 
 -- <<<<<<<<<<<<<<<<

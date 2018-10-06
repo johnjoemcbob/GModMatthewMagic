@@ -11,24 +11,25 @@
 -- <<<<<<<<<<<<<<<<
 local MM_RUNE_POINT_NEXT	= 24
 local MM_RUNE_LINE_APPROX	= 0.5
-local MM_RUNE_SHAPE_APPROX	= 0.1
-local MM_RUNE_ACCEPTANCE	= 90
+local MM_RUNE_SHAPE_APPROX	= 0.3
+local MM_RUNE_DIR_MIN		= 0.1
+local MM_RUNE_ACCEPTANCE	= 60
 
 -- <<<<<<<<<<<<<<<<
 -- Variables
 -- <<<<<<<<<<<<<<<<
 local MM_Rune_Points = {}
+local MM_Rune_Compass = {}
 local MM_Rune_Drawing = false
 
 -- <<<<<<<<<<<<<<<<
 -- Net
 -- <<<<<<<<<<<<<<<<
--- net.Receive( "MM_Send_Map_Size", function()
-	-- local w = net.ReadInt( MM_Net_Map_Bits_Size )
-	-- local h = net.ReadInt( MM_Net_Map_Bits_Size )
-	-- MM_Map_Width = w
-	-- MM_Map_Height = h
--- end )
+function MM_Net_Rune_Recognised( rune )
+	net.Start( "MM_Rune_Recognised" )
+		net.WriteString( rune )
+	net.SendToServer()
+end
 
 -- <<<<<<<<<<<<<<<<
 -- Functions
@@ -42,71 +43,79 @@ end
 -- Called on mouse up
 function MM_Rune_Finish()
 	MM_Rune_Simplify()
-	MM_Rune_Normalize()
-	MM_Rune_Match()
-	-- MM_Rune_Points = {}
+	local rune = MM_Rune_Match()
+
+	if ( rune ) then
+		MM_Net_Rune_Recognised( rune )
+	end
+	
+	MM_Rune_Points = {}
 	MM_Rune_Drawing = false
 end
 
--- Remove extra in-between points on approximately straight line
+-- Convert drawn line data into directional data
 function MM_Rune_Simplify()
-	local lastdir = Vector( 0, 0 )
-	local lastpoint = nil
-	local todelete = {}
+	MM_Rune_Compass = {}
+
+	-- Convert each point into a 16 point compass direction
+	-- Track distance from point to point?
+	local lastpoint = newpoint
 	for k, newpoint in pairs( MM_Rune_Points ) do
 		if ( !lastpoint ) then
 			lastpoint = newpoint
 		else
-			local newdir = ( newpoint - lastpoint ):GetNormalized()
-			-- print( newdir )
-			-- print( lastdir )
-			-- print( newdir:Distance( lastdir ) )
-			if ( k == 2 or ( newdir:Distance( lastdir ) <= MM_RUNE_LINE_APPROX and k != #MM_Rune_Points ) ) then
-				-- print( k )
-				table.insert( todelete, k )
-			else
-				-- table.remove( todelete, #todelete )
-			end
-			lastdir = newdir
+			local newdir = ( lastpoint - newpoint ):GetNormalized()
+			table.insert( MM_Rune_Compass, {
+				Dir = MM_Rune_DirToCompass( newdir ),
+				Len = lastpoint:Distance( newpoint ),
+			} )
 			lastpoint = newpoint
 		end
 	end
 
-	for k, point in pairs( todelete ) do
-		MM_Rune_Points[point] = nil
-	end
-end
-
-function MM_Rune_Normalize()
-	-- With middle as center
-	-- So to normalise height, divide all by max y?
-	-- local width = 0
-	-- local height = 0
-		-- for k, a in pairs( MM_Rune_Points ) do
-			-- for _, b in pairs( MM_Rune_Points ) do
-				-- local newwidth = math.abs( a.x - b.x )
-				-- width = math.max( width, newwidth )
-				-- local newheight = math.abs( a.y - b.y )
-				-- height = math.max( height, newheight )
-			-- end
-		-- end
-		-- print( width .. " " .. height )
-	-- for k, point in pairs( MM_Rune_Points ) do
-		-- print( point )
-		-- point.x = point.x / width
-		-- point.y = point.y / height
-		-- print( point )
-	-- end
-	local lastpoint = nil
-	local dirs = {}
-	for k, point in pairs( MM_Rune_Points ) do
-		if ( lastpoint ) then
-			table.insert( dirs, ( lastpoint - point ):GetNormalized() )
-			print( dirs[#dirs] )
+	-- Simplify to 8 point compass directions by prioritising nearest to last
+	local last = nil
+	for k, compass in pairs( MM_Rune_Compass ) do
+		-- Only simplify 16 inbetween details to get to 8 point again
+		if ( string.len( compass.Dir ) == 3 ) then
+			if ( last ) then
+				-- Take the last value
+				MM_Rune_Compass[k].Dir = last.Dir
+			else
+				-- Just remove the first letter
+				MM_Rune_Compass[k].Dir = string.Right( compass.Dir, 2 )
+			end
 		end
-		lastpoint = point
+		last = MM_Rune_Compass[k]
 	end
-	MM_Rune_Points = dirs
+
+	-- Remove duplicates
+	local toremove = {}
+	local last = nil
+	for k, compass in pairs( MM_Rune_Compass ) do
+		if ( last and last.Dir == compass.Dir ) then
+			last.Len = last.Len + compass.Len
+			table.insert( toremove, k )
+		else
+			last = compass
+		end
+	end
+	for k, compass in pairs( toremove ) do
+		-- table.remove( MM_Rune_Compass, compass )
+		MM_Rune_Compass[compass] = nil
+	end
+
+	-- Normalise distances
+	local max = 0
+		for k, compass in pairs( MM_Rune_Compass ) do
+			max = math.max( max, compass.Len )
+		end
+	for k, compass in pairs( MM_Rune_Compass ) do
+		compass.Len = compass.Len / max
+	end
+
+	-- Debug
+	PrintTable( MM_Rune_Compass )
 end
 
 function MM_Rune_Match()
@@ -115,15 +124,32 @@ function MM_Rune_Match()
 	for k, rune in pairs( MM_Runes ) do
 		local match = 0
 			-- Score with number of matches against total required
-			for _, point in pairs( rune.Shape ) do
-				for n, newpoint in pairs( MM_Rune_Points ) do
-					print( point:Distance( newpoint ) )
-					if ( point:Distance( newpoint ) <= MM_RUNE_SHAPE_APPROX ) then
+			local used = {}
+			for _, compass in pairs( rune.Shape ) do
+				for n, newcompass in pairs( MM_Rune_Compass ) do
+					local min = compass[2]
+					local max = compass[2]
+						-- Optionally min/max range can be supplied
+						if ( compass[3] ) then
+							max = compass[3]
+						end
+						-- Add approximation
+						min = min - MM_RUNE_SHAPE_APPROX
+						max = max + MM_RUNE_SHAPE_APPROX
+					local dist = newcompass.Len
+					if ( compass[1] == newcompass.Dir and dist >= min and dist <= max ) then
 						match = match + 100
+						used[n] = true
 						break
 					end
 				end
 				-- TODO: Take into account offset from pure
+			end
+			-- Remove score for each extra direction included
+			for n, compass in pairs( MM_Rune_Compass ) do
+				if ( !used[n] and compass.Len >= MM_RUNE_DIR_MIN ) then
+					match = match - 100
+				end
 			end
 			match = match / #rune.Shape
 		matches[k] = match
@@ -131,17 +157,58 @@ function MM_Rune_Match()
 
 	-- Choose closest if over acceptance threshold
 	local max = 0
-	local ind = -1
+	local ind = nil
 	for k, match in pairs( matches ) do
-		print( "Tried: " .. k .. " (with " .. max .. " score)" )
-		if ( match >= MM_RUNE_ACCEPTANCE and max > match ) then
+		print( "Tried: " .. k .. " (with " .. match .. " score)" )
+		if ( match >= MM_RUNE_ACCEPTANCE and max < match ) then
 			max = match
 			ind = k
 		end
 	end
-	if ( ind != -1 ) then
+	if ( ind != nil ) then
 		print( "Recognised rune shape: " .. ind .. " (with " .. max .. " score)" )
 	end
+
+	return ind
+end
+
+-- Vector direction to 16 point compass direction
+-- From: https://gamedev.stackexchange.com/questions/49290/whats-the-best-way-of-transforming-a-2d-vector-into-the-closest-8-way-compass-d
+function MM_Rune_DirToCompass( dir )
+	-- start direction from the lowest value, in this case it's west with -π
+	local dirs = {
+		"W",
+		"WSW",
+		"SW",
+		"SSW",
+		"S",
+		"SSE",
+		"SE",
+		"ESE",
+		"E",
+		"ENE",
+		"NE",
+		"NNE",
+		"N",
+		"NNW",
+		"NW",
+		"WNW",
+	}
+
+	local increment = (2 * math.pi ) / #dirs
+	local angle = math.atan2( dir.y, -dir.x )
+	local testangle = -math.pi + increment / 2
+
+	local index = 1
+	while ( angle > testangle ) do
+		index = index + 1
+		if ( index > #dirs ) then
+			return dirs[1] -- Roll over
+		end
+		testangle = testangle + increment
+	end
+
+	return dirs[index]
 end
 
 -- <<<<<<<<<<<<<<<<
