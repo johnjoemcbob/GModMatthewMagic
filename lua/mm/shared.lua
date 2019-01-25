@@ -21,6 +21,8 @@ MM_Reach_Max = 1500 -- This should be player specific
 MM_Net_Map_Bits_Cell = 32
 MM_Net_Map_Bits_Size = 32
 
+-- TODO: Fix the loading of these files on clients!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 -- <<<<<<<<<<<<<<<<
 -- Load runes
 -- <<<<<<<<<<<<<<<<
@@ -55,6 +57,34 @@ for k, file in pairs( files ) do
 		AddCSLuaFile( "mm/wops/" .. file )
 	end
 	include( "mm/wops/" .. file )
+end
+
+-- <<<<<<<<<<<<<<<<
+-- Load components
+-- <<<<<<<<<<<<<<<<
+MM_Components = {}
+
+function MM_AddComponent( tab )
+	MM_Components[tab.Name] = tab
+end
+
+function MM_InvokeComponent( ply, comp, args )
+	-- Separate any extra arguments from the component name
+	if ( type(comp) == "table" ) then
+		table.insert( args, comp[2] )
+		comp = comp[1]
+	end
+
+	return MM_Components[comp]:Invoke( ply, args )
+end
+
+local files, directories = file.Find( "lua/mm/components/*", "GAME" )
+for k, file in pairs( files ) do
+	print( "mm/components/" .. file )
+	if ( SERVER ) then
+		AddCSLuaFile( "mm/components/" .. file )
+	end
+	include( "mm/components/" .. file )
 end
 
 -- <<<<<<<<<<<<<<<<
