@@ -26,7 +26,7 @@ MM_ProjectedTexture_Reach:Update()
 
 local MM_ProjectedTexture_Map = ProjectedTexture()
 	MM_ProjectedTexture_Map:SetFOV( 90 )
-	MM_ProjectedTexture_Map:SetBrightness( 1000 )
+	MM_ProjectedTexture_Map:SetBrightness( 100 )
 	MM_ProjectedTexture_Map:SetFarZ( 100000 )
 	MM_ProjectedTexture_Map:SetEnableShadows( false )
 MM_ProjectedTexture_Map:Update()
@@ -150,7 +150,7 @@ end
 -- Functions
 -- <<<<<<<<<<<<<<<<
 function MM_Map_Render()
-	local w, h = #MM_Map_Table, #MM_Map_Table[0]
+	local w, h = #MM_Map_Table * MM_Map_FakeDetail, #MM_Map_Table[0] * MM_Map_FakeDetail
 
 	-- Render the map to a render texture using 2D surface.DrawRect
 	MM_Map_RenderTarget = GetRenderTarget( "MM_Map_RenderTarget", w, h, true )
@@ -164,7 +164,7 @@ function MM_Map_Render()
 						-- if ( math.random( 1, 2 ) == 1 ) then
 						if ( MM_Map_Table[x][y] != 0 ) then
 							surface.SetDrawColor( 50, 50, 50, 255 )
-							surface.DrawRect( w - x, y, 1, 1 )
+							surface.DrawRect( w - x * MM_Map_FakeDetail, y * MM_Map_FakeDetail, 1 * MM_Map_FakeDetail, 1 * MM_Map_FakeDetail )
 						end
 					end
 				end
@@ -174,7 +174,7 @@ function MM_Map_Render()
 end
 
 function MM_Map_Render_Cell( x, y )
-	local w, h = #MM_Map_Table, #MM_Map_Table[0]
+	local w, h = #MM_Map_Table * MM_Map_FakeDetail, #MM_Map_Table[0] * MM_Map_FakeDetail
 
 	-- Render the map to a render texture using 2D surface.DrawRect
 	MM_Map_RenderTarget = GetRenderTarget( "MM_Map_RenderTarget", w, h, true )
@@ -183,7 +183,9 @@ function MM_Map_Render_Cell( x, y )
 			cam.Start2D()
 				if ( MM_Map_Table[x][y] == 0 ) then
 					surface.SetDrawColor( 0, 0, 0, 255 )
-					surface.DrawRect( w - x - 1, y - 1, 2, 2 )
+					-- surface.DrawRect( w - x - 1, y - 1, 2, 2 )
+					-- draw.Circle( #MM_Map_Table - x, y, 0.5 * MM_Map_FakeDetail, 128, 0 )
+					surface.DrawRect( #MM_Map_Table - x, y, 1 * MM_Map_FakeDetail, 1 * MM_Map_FakeDetail )
 				end
 			cam.End2D()
 		render.SetViewPort( 0, 0, ScrW(), ScrH() )
@@ -263,7 +265,24 @@ hook.Add( "RenderScreenspaceEffects", "MM_RenderScreenspaceEffects", function()
 	//DrawColorModify( postprocess_colourmodify ) -- uncomment for daynight
 end )
 
+function draw.Circle( x, y, radius, seg, rotate )
+	local cir = PRK_GetCirclePoints( x, y, radius, seg, rotate )
+	surface.DrawPoly( cir )
+end
 
+-- From: http://wiki.garrysmod.com/page/surface/DrawPoly
+function PRK_GetCirclePoints( x, y, radius, seg, rotate )
+	local cir = {}
+		-- table.insert( cir, { x = x, y = y, u = 0.5, v = 0.5 } )
+		for i = 0, seg do
+			local a = math.rad( ( ( i / seg ) * -360 ) + rotate )
+			table.insert( cir, { x = x + math.sin( a ) * radius, y = y + math.cos( a ) * radius, u = math.sin( a ) / 2 + 0.5, v = math.cos( a ) / 2 + 0.5 } )
+		end
+
+		-- local a = math.rad( 0 ) -- This is need for non absolute segment counts
+		-- table.insert( cir, { x = x + math.sin( a ) * radius, y = y + math.cos( a ) * radius, u = math.sin( a ) / 2 + 0.5, v = math.cos( a ) / 2 + 0.5 } )
+	return cir
+end
 
 -- The following were shader/post processing tests for ways to visualise the void zones
 

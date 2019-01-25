@@ -177,12 +177,15 @@ end
 -- <<<<<<<<<<<<<<<<
 -- Hooks
 -- <<<<<<<<<<<<<<<<
-hook.Add( "PostGamemodeLoaded", "MM_PostGamemodeLoaded", function()
-	MM_Map_Initialise()
-end )
 
 -- Initialise player variables
+local init = false
 hook.Add( "PlayerInitialSpawn", "MM_PlayerInitialSpawn", function( ply )
+	if ( !init ) then
+		MM_Map_Initialise()
+		init = true
+	end
+
 	ply:SetNWInt( "MM_Reach", MM_Reach_Default )
 	ply:SetNWInt( "MM_Magic", MM_Magic_Default )
 end )

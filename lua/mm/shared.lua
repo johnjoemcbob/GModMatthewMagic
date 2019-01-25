@@ -11,6 +11,7 @@ MM_Magic_PerUnit = 1
 -- (Warning: More detailed maps will require multiple messages to be sent to clients
 --  due to the net library byte limit)
 MM_Map_Detail = 100
+MM_Map_FakeDetail = 1
 
 MM_Reach_Default = 100
 MM_Reach_ChangeSpeed = 5000
