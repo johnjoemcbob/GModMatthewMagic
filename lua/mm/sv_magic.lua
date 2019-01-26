@@ -64,6 +64,13 @@ function MM_Net_Send_Map_Cell( x, y )
 		net.WriteBool( bool ) -- Convert to boolean
 	net.Broadcast()
 end
+-- From SERVER
+util.AddNetworkString( "MM_Invoke" )
+function MM_Net_Invoke( ply, comp )
+	net.Start( "MM_Invoke" )
+		net.WriteString( comp )
+	net.Send( ply )
+end
 -- From CLIENT
 util.AddNetworkString( "MM_Receive_Map_Request" )
 net.Receive( "MM_Receive_Map_Request", function( len, ply )

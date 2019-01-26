@@ -145,6 +145,12 @@ function MM_Net_CheckForAllReceived()
 		end
 	end
 end
+net.Receive( "MM_Invoke", function()
+	local comp = net.ReadString()
+	print( "Received Invoke: " .. comp )
+
+	hook.Run( "HUDItemPickedUp", comp )
+end )
 
 -- <<<<<<<<<<<<<<<<
 -- Functions

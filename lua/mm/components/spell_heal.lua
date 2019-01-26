@@ -1,34 +1,25 @@
 
 local comp = {
-	Name = "FORCE",
+	Name = "HEAL",
 	Type = "SPELL",
 	Cost = 100,
 	Invoke = function( self, ply )
-		print( "Try invoke FORCE" )
+		print( "Try invoke HEAL" )
 		local trigger = self.SubComponents["Trigger"].Value
 		local invoke = function()
-			local ent = MM_InvokeComponent( ply, self.SubComponents["Forcee"].Value )
-			local pos = MM_InvokeComponent( ply, self.SubComponents["Target"].Value )
-			local dir = ( pos - ent:EyePos() ):GetNormalized()
-			ent:SetVelocity( dir * 1000 + Vector( 0, 0, 1 ) * 400 )
+			local ent = MM_InvokeComponent( ply, self.SubComponents["Patient"].Value )
+			ent:AddBuff( 4 )
 			MM_Net_Invoke( ent, self.Name .. " " .. ent:Nick() .. " because " .. trigger )
 		end
 		MM_InvokeComponent( ply, trigger, { invoke } )
 	end,
 	SubComponents = {
-		-- Ent to move
-		["Forcee"] =
+		-- Ent to heal
+		["Patient"] =
 		{
 			Type = "TARGET",
 			RequiredType = "Entity",
 			Value = "TARGET_SELF",
-		},
-		-- Dir to go to
-		["Target"] =
-		{
-			Type = "TARGET",
-			RequiredType = "Position",
-			Value = "TARGET_EYE_TRACE",
 		},
 		-- Trigger
 		["Trigger"] =
