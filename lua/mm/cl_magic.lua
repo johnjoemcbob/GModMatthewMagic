@@ -215,8 +215,7 @@ hook.Add( "PreDrawHUD", "MM_Map_PreDrawHUD", function()
 	end
 end )
 
-hook.Remove( "HUDPaint", HOOK_ID )
-hook.Add( "HUDPaint", HOOK_ID, function()
+hook.Add( "HUDPaint", "HUDPaint_Map", function()
 	-- Update the Reach projected texture
 	local speed = 20
 	local speed_rot = 10

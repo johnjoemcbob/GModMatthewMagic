@@ -80,8 +80,8 @@ table.insert(
 		Init = function( self, ply )
 			ply.OldWalkSpeed = ply:GetWalkSpeed()
 			ply.OldRunSpeed = ply:GetRunSpeed()
-			ply:SetWalkSpeed( ply:GetWalkSpeed() / 2 )
-			ply:SetRunSpeed( ply:GetRunSpeed() / 2 )
+			ply:SetWalkSpeed( ply:GetWalkSpeed() * 2 )
+			ply:SetRunSpeed( ply:GetRunSpeed() * 2 )
 		end,
 		Think = function( self, ply )
 			

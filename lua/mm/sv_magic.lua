@@ -78,6 +78,26 @@ net.Receive( "MM_Receive_Map_Request", function( len, ply )
 	print( "Received Map Data Request.. " .. widthreceived )
 	MM_Net_Send_Map( widthreceived )
 end )
+-- From CLIENT
+util.AddNetworkString( "MM_Receive_Spell_Craft" )
+net.Receive( "MM_Receive_Spell_Craft", function( len, ply )
+	local components = net.ReadTable()
+
+	local name = ply:Nick() .. "_" .. CurTime()
+	print( "Creating spell! " .. name )
+
+	local spell = table.shallowcopy( MM_Components[string.upper( components[1] )] )
+	spell.Name = name
+	table.remove( components, 1 )
+	PrintTable( components )
+	for k, comp in pairs( components ) do
+		spell.SubComponents[comp.Name].Value = comp.Value
+	end
+
+	MM_AddComponent( spell )
+	MM_InvokeComponent( ply, name )
+	-- TODO: Need to send to clients again?
+end )
 
 -- <<<<<<<<<<<<<<<<
 -- Functions

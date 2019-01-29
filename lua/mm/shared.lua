@@ -65,7 +65,7 @@ end
 MM_Components = {}
 
 function MM_AddComponent( tab )
-	MM_Components[tab.Name] = tab
+	MM_Components[string.upper( tab.Name )] = tab
 end
 
 function MM_InvokeComponent( ply, comp, args )
@@ -75,7 +75,7 @@ function MM_InvokeComponent( ply, comp, args )
 		comp = comp[1]
 	end
 
-	return MM_Components[comp]:Invoke( ply, args )
+	return MM_Components[string.upper( comp )]:Invoke( ply, args )
 end
 
 local files, directories = file.Find( "lua/mm/components/*", "GAME" )

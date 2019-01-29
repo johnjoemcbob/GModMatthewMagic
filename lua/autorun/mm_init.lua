@@ -7,6 +7,7 @@ if SERVER then
 	AddCSLuaFile("autorun/mm_init.lua")
 
 	AddCSLuaFile("mm/cl_magic.lua")
+	AddCSLuaFile("mm/cl_craft.lua")
 	AddCSLuaFile("mm/cl_rune.lua")
 	AddCSLuaFile("mm/cl_buff.lua")
 	AddCSLuaFile("mm/sh_buff.lua")
@@ -19,6 +20,7 @@ if SERVER then
 	include("mm/shared.lua")
 else
 	include("mm/cl_magic.lua")
+	include("mm/cl_craft.lua")
 	include("mm/cl_rune.lua")
 	include("mm/cl_buff.lua")
 	include("mm/sh_buff.lua")

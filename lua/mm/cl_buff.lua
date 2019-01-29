@@ -49,7 +49,7 @@ hook.Add( "HUDPaint", "HUDPaint_Buffs", function()
 
 				-- Icon
 				surface.SetDrawColor( 255, 255, 255, 255 )
-				surface.SetMaterial( MM_Buffs[k].Material	)
+				surface.SetMaterial( MM_Buffs[k].Material )
 				surface.DrawTexturedRect( x, y, size, size )
 
 				-- Display description if the context menu is open and the player is hovering over this buff
