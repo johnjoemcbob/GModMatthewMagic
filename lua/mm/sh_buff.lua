@@ -157,24 +157,24 @@ table.insert(
 			-- This is mostly activated by totems affecting the player
 		end,
 		Init = function( self, ply )
-			self.Floor = ents.Create( "prop_physics" )
-			self.Floor:SetModel( "models/hunter/plates/plate025x025.mdl" )
-			self.Floor:SetMoveType( MOVETYPE_NONE )
-			self.Floor:Spawn()
-			self.Floor:SetNoDraw( true )
-			local phys = self.Floor:GetPhysicsObject()
+			ply.LevFloor = ents.Create( "prop_physics" )
+			ply.LevFloor:SetModel( "models/hunter/plates/plate025x025.mdl" )
+			ply.LevFloor:SetMoveType( MOVETYPE_NONE )
+			ply.LevFloor:Spawn()
+			-- self.Floor:SetNoDraw( true )
+			local phys = ply.LevFloor:GetPhysicsObject()
 			if ( phys and phys:IsValid() ) then
 				phys:EnableMotion( false )
 			end
-			self.Floor.Height = ply:GetPos().z - 2
+			ply.LevFloor.Height = ply:GetPos().z - 2
 		end,
 		Think = function( self, ply )
-			self.Floor:SetPos( Vector( ply:GetPos().x, ply:GetPos().y, self.Floor.Height ) )
+			ply.LevFloor:SetPos( Vector( ply:GetPos().x, ply:GetPos().y, ply.LevFloor.Height ) )
 		end,
 		Remove = function( self, ply )
-			if ( self.Floor ) then
-				self.Floor:Remove()
-				self.Floor = nil
+			if ( ply.LevFloor ) then
+				ply.LevFloor:Remove()
+				ply.LevFloor = nil
 			end
 		end
 	}
@@ -193,31 +193,31 @@ table.insert(
 			-- This is mostly activated by totems affecting the player
 		end,
 		Init = function( self, ply )
-			self.Floor = ents.Create( "prop_physics" )
-			self.Floor:SetModel( "models/hunter/plates/plate025x025.mdl" )
-			self.Floor:SetMoveType( MOVETYPE_NONE )
-			self.Floor:Spawn()
-			self.Floor:SetNoDraw( true )
-			local phys = self.Floor:GetPhysicsObject()
+			ply.WaterFloor = ents.Create( "prop_physics" )
+			ply.WaterFloor:SetModel( "models/hunter/plates/plate025x025.mdl" )
+			ply.WaterFloor:SetMoveType( MOVETYPE_NONE )
+			ply.WaterFloor:Spawn()
+			ply.WaterFloor:SetNoDraw( true )
+			local phys = ply.WaterFloor:GetPhysicsObject()
 			if ( phys and phys:IsValid() ) then
 				phys:EnableMotion( false )
 			end
 		end,
 		Think = function( self, ply )
 			if ( ply:WaterLevel() > 0 ) then
-				if ( !self.Floor.Height ) then
-					self.Floor.Height = ply:GetPos().z - 2
+				if ( !ply.WaterFloor.Height ) then
+					ply.WaterFloor.Height = ply:GetPos().z - 2
 				end
-				self.Floor:SetPos( Vector( ply:GetPos().x, ply:GetPos().y, self.Floor.Height ) )
+				ply.WaterFloor:SetPos( Vector( ply:GetPos().x, ply:GetPos().y, ply.WaterFloor.Height ) )
 			else
-				self.Floor.Height = nil
-				self.Floor:SetPos( Vector( 0, 0, 0 ) ) -- Lets just hope this doesn't cause issues :)
+				ply.WaterFloor.Height = nil
+				ply.WaterFloor:SetPos( Vector( 0, 0, 0 ) ) -- Lets just hope this doesn't cause issues :)
 			end
 		end,
 		Remove = function( self, ply )
-			if ( self.Floor ) then
-				self.Floor:Remove()
-				self.Floor = nil
+			if ( ply.WaterFloor ) then
+				ply.WaterFloor:Remove()
+				ply.WaterFloor = nil
 			end
 		end
 	}

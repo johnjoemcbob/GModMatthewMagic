@@ -1,6 +1,6 @@
 
 -- TODO: Different subcomponents per player per combo, so this should be passed in OR the table shallow copied?
-
+print( "In file of spell TELEPORT" )
 local comp = {
 	Name = "TELEPORT",
 	Type = "SPELL",

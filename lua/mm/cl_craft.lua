@@ -7,6 +7,8 @@ local frame, backdrop, craft_panel, comp_list
 -- Variables
 -- <<<<<<<<<<<<<<<<
 local dropid = "MM_Craft_DropID"
+-- local font = "TargetID"
+local font = "TargetIDSmall"
 local textcolour = Color( 0, 0, 0, 255 )
 local backtextcolour = Color( 150, 20, 10, 255 )
 local backcolour = Color( 181, 181, 181, 255 )
@@ -51,8 +53,8 @@ function MM_Craft_Component_Add( icon, type, name )
 		surface.DrawTexturedRect( iconborder / 2, iconborder / 2, w - iconborder, h - iconborder )
 
 		-- Name
-		draw.SimpleText( type, "TargetID", 0, 0, textcolour, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP )
-		draw.SimpleText( name, "TargetID", w, h, textcolour, TEXT_ALIGN_RIGHT, TEXT_ALIGN_BOTTOM )
+		draw.SimpleText( type, font, 0, 0, textcolour, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP )
+		draw.SimpleText( name, font, w, h, textcolour, TEXT_ALIGN_RIGHT, TEXT_ALIGN_BOTTOM )
 	end
 	comp:Droppable( dropid )
 	table.insert( components, comp )
@@ -72,8 +74,8 @@ function MM_Craft_Slot_Add( type, name, x, y )
 	slot.PaintOver = function( self, w, h )
 		if ( slot.Component == nil ) then
 			-- Name
-			draw.SimpleText( type, "TargetID", border, border, backtextcolour, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP )
-			draw.SimpleText( name, "TargetID", w - border, h - border, backtextcolour, TEXT_ALIGN_RIGHT, TEXT_ALIGN_BOTTOM )
+			draw.SimpleText( type, font, border, border, backtextcolour, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP )
+			draw.SimpleText( name, font, w - border, h - border, backtextcolour, TEXT_ALIGN_RIGHT, TEXT_ALIGN_BOTTOM )
 		end
 
 		-- Border

@@ -96,6 +96,9 @@ net.Receive( "MM_Receive_Spell_Craft", function( len, ply )
 
 	MM_AddComponent( spell )
 	MM_InvokeComponent( ply, name )
+	-- for k, v in pairs( player.GetAll() ) do
+		-- MM_InvokeComponent( v, name )
+	-- end
 	-- TODO: Need to send to clients again?
 end )
 
@@ -211,6 +214,10 @@ hook.Add( "PlayerInitialSpawn", "MM_PlayerInitialSpawn", function( ply )
 	if ( !init ) then
 		MM_Map_Initialise()
 		init = true
+	else
+		MM_Send_Map_Size()
+		MM_Net_Send_Map_Min()
+		MM_Net_Send_Map_Initial()
 	end
 
 	ply:SetNWInt( "MM_Reach", MM_Reach_Default )

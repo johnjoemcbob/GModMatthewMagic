@@ -35,9 +35,7 @@ end
 local files, directories = file.Find( "lua/mm/runes/*", "GAME" )
 for k, file in pairs( files ) do
 	print( "mm/runes/" .. file )
-	if ( SERVER ) then
-		AddCSLuaFile( "mm/runes/" .. file )
-	end
+	AddCSLuaFile( "mm/runes/" .. file )
 	include( "mm/runes/" .. file )
 end
 
@@ -53,9 +51,7 @@ end
 local files, directories = file.Find( "lua/mm/wops/*", "GAME" )
 for k, file in pairs( files ) do
 	print( "mm/wops/" .. file )
-	if ( SERVER ) then
-		AddCSLuaFile( "mm/wops/" .. file )
-	end
+	AddCSLuaFile( "mm/wops/" .. file )
 	include( "mm/wops/" .. file )
 end
 
@@ -65,6 +61,7 @@ end
 MM_Components = {}
 
 function MM_AddComponent( tab )
+	print( "Add component.. " .. tostring( tab.Name ) )
 	MM_Components[string.upper( tab.Name )] = tab
 end
 
@@ -78,13 +75,38 @@ function MM_InvokeComponent( ply, comp, args )
 	return MM_Components[string.upper( comp )]:Invoke( ply, args )
 end
 
+-- TODO: Cache on server and send list to each client? idk...
+print( "MM - Load components" )
 local files, directories = file.Find( "lua/mm/components/*", "GAME" )
 for k, file in pairs( files ) do
 	print( "mm/components/" .. file )
-	if ( SERVER ) then
-		AddCSLuaFile( "mm/components/" .. file )
-	end
+	AddCSLuaFile( "mm/components/" .. file )
 	include( "mm/components/" .. file )
+end
+if ( SERVER ) then
+	local files = files
+	util.AddNetworkString( "MM_Files" )
+	function MM_Net_SendFiles( ply, files )
+		net.Start( "MM_Files" )
+			net.WriteTable( files )
+		net.Send( ply )
+		print( "Send file list to client" )
+	end
+	hook.Add( "PlayerInitialSpawn", "MM_PlayerInitialSpawn_Components", function( ply )
+		MM_Net_SendFiles( ply, files )
+	end )
+end
+if ( CLIENT ) then
+	net.Receive( "MM_Files", function()
+		local files = net.ReadTable()
+		print( "Receive file list from server" )
+		PrintTable( files )
+		for k, file in pairs( files ) do
+			print( "Late mm/components/" .. file )
+			AddCSLuaFile( "mm/components/" .. file )
+			include( "mm/components/" .. file )
+		end
+	end )
 end
 
 -- <<<<<<<<<<<<<<<<
