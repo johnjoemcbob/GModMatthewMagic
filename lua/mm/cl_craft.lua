@@ -114,6 +114,7 @@ function MM_Craft_Drop_Slot( dropped, into )
 	if ( string.upper( into.Type ) == string.upper( dropped.Type ) ) then
 		into:Add( dropped )
 		into.Component = dropped
+		print( into )
 		dropped.Slot = into
 		dropped:SetPos( border, border )
 
@@ -146,6 +147,9 @@ function MM_Craft_UI_Open()
 	-- TODO Subslots depend on parent slots,
 	-- IF parent slot changes then slots are removed/readded
 	-- Make sure to remove component from slots before removing and readd to inv!
+
+	slots = {}
+	components = {}
 
 	-- UI
 	local w = ScrW() / 3
@@ -192,6 +196,7 @@ function MM_Craft_UI_Open()
 	button_spell:SetPos( w - bw, border / 2 + titlebar / 2 + h / 2 )
 	button_spell.DoClick = function()
 		print( "but1" )
+		print( slots[1] )
 		print( slots[1].Component )
 		if ( slots[1].Component == nil ) then return end
 		print( "but2" )
@@ -235,17 +240,22 @@ function MM_Craft_UI_Open()
 	MM_Craft_Slot_Add( "SPELL", "Main", border, border )
 
 	-- Test with some components
-	MM_Craft_Component_Add( Material( "icon16/wand.png" ), "Spell", "Force" )
-	MM_Craft_Component_Add( Material( "icon16/clock.png" ), "Trigger", "Time" )
-	MM_Craft_Component_Add( Material( "icon16/clock.png" ), "Trigger", "Hurt" )
-	MM_Craft_Component_Add( Material( "icon16/status_online.png" ), "Target", "Self" )
-	MM_Craft_Component_Add( Material( "icon16/arrow_up.png" ), "Direction", "Forward" )
-	MM_Craft_Component_Add( Material( "icon16/arrow_up.png" ), "Direction", "Backward" )
-	MM_Craft_Component_Add( Material( "icon16/status_online.png" ), "Target", "Self" )
-	MM_Craft_Component_Add( Material( "icon16/status_online.png" ), "Target", "Self" )
-	MM_Craft_Component_Add( Material( "icon16/status_online.png" ), "Target", "Self" )
+	-- MM_Craft_Component_Add( Material( "icon16/wand.png" ), "Spell", "Force" )
+	-- MM_Craft_Component_Add( Material( "icon16/clock.png" ), "Trigger", "Time" )
+	-- MM_Craft_Component_Add( Material( "icon16/clock.png" ), "Trigger", "Hurt" )
+	-- MM_Craft_Component_Add( Material( "icon16/status_online.png" ), "Target", "Self" )
+	-- MM_Craft_Component_Add( Material( "icon16/arrow_up.png" ), "Direction", "Forward" )
+	-- MM_Craft_Component_Add( Material( "icon16/arrow_up.png" ), "Direction", "Backward" )
+	-- MM_Craft_Component_Add( Material( "icon16/status_online.png" ), "Target", "Self" )
+	-- MM_Craft_Component_Add( Material( "icon16/status_online.png" ), "Target", "Self" )
+	-- MM_Craft_Component_Add( Material( "icon16/status_online.png" ), "Target", "Self" )
+	local type_icons = {
+		["SPELL"] = Material( "icon16/wand.png" ),
+		["TRIGGER"] = Material( "icon16/clock.png" ),
+		["TARGET"] = Material( "icon16/status_online.png" ),
+	}
 	for k, comp in pairs( MM_Components ) do
-		MM_Craft_Component_Add( Material( "icon16/wand.png" ), comp.Type, comp.Name )
+		MM_Craft_Component_Add( type_icons[comp.Type], comp.Type, comp.Name )
 	end
 end
 concommand.Add( "mm_craft", MM_Craft_UI_Open )

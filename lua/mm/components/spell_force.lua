@@ -8,7 +8,7 @@ local comp = {
 		local trigger = self.SubComponents["Trigger"].Value
 		local invoke = function()
 			local ent = MM_InvokeComponent( ply, self.SubComponents["Forcee"].Value )
-			local pos = MM_InvokeComponent( ply, self.SubComponents["Target"].Value )
+			local pos = MM_InvokeComponent( ply, self.SubComponents["Position"].Value )
 			local dir = ( pos - ent:EyePos() ):GetNormalized()
 			ent:SetVelocity( dir * 1000 + Vector( 0, 0, 1 ) * 400 )
 			MM_Net_Invoke( ent, self.Name .. " " .. ent:Nick() .. " because " .. trigger )
@@ -24,7 +24,7 @@ local comp = {
 			Value = "TARGET_SELF",
 		},
 		-- Dir to go to
-		["Target"] =
+		["Position"] =
 		{
 			Type = "TARGET",
 			RequiredType = "Position",

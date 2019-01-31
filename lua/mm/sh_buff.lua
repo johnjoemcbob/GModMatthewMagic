@@ -72,7 +72,7 @@ table.insert(
 		Team = TEAM_HERO,
 		Debuff = true,
 		ThinkActivate = function( self, ply )
-			if ( ply:WaterLevel() > 0 ) then
+			if ( ply:WaterLevel() > 2 ) then
 				return true
 			end
 			return false
@@ -141,6 +141,111 @@ table.insert(
 		end,
 		Remove = function( self, ply )
 			
+		end
+	}
+)
+table.insert(
+	MM_Buffs,
+	{
+		Name = "Levitation",
+		Description = "Explanation here.",
+		Icon = "icon16/shape_flip_vertical.png",
+		Time = 20,
+		Team = TEAM_BOTH,
+		Debuff = false,
+		ThinkActivate = function( self, ply )
+			-- This is mostly activated by totems affecting the player
+		end,
+		Init = function( self, ply )
+			self.Floor = ents.Create( "prop_physics" )
+			self.Floor:SetModel( "models/hunter/plates/plate025x025.mdl" )
+			self.Floor:SetMoveType( MOVETYPE_NONE )
+			self.Floor:Spawn()
+			self.Floor:SetNoDraw( true )
+			local phys = self.Floor:GetPhysicsObject()
+			if ( phys and phys:IsValid() ) then
+				phys:EnableMotion( false )
+			end
+			self.Floor.Height = ply:GetPos().z - 2
+		end,
+		Think = function( self, ply )
+			self.Floor:SetPos( Vector( ply:GetPos().x, ply:GetPos().y, self.Floor.Height ) )
+		end,
+		Remove = function( self, ply )
+			if ( self.Floor ) then
+				self.Floor:Remove()
+				self.Floor = nil
+			end
+		end
+	}
+)
+
+table.insert(
+	MM_Buffs,
+	{
+		Name = "Water Walking",
+		Description = "Explanation here.",
+		Icon = "icon16/shape_flip_vertical.png",
+		Time = 20,
+		Team = TEAM_BOTH,
+		Debuff = false,
+		ThinkActivate = function( self, ply )
+			-- This is mostly activated by totems affecting the player
+		end,
+		Init = function( self, ply )
+			self.Floor = ents.Create( "prop_physics" )
+			self.Floor:SetModel( "models/hunter/plates/plate025x025.mdl" )
+			self.Floor:SetMoveType( MOVETYPE_NONE )
+			self.Floor:Spawn()
+			self.Floor:SetNoDraw( true )
+			local phys = self.Floor:GetPhysicsObject()
+			if ( phys and phys:IsValid() ) then
+				phys:EnableMotion( false )
+			end
+		end,
+		Think = function( self, ply )
+			if ( ply:WaterLevel() > 0 ) then
+				if ( !self.Floor.Height ) then
+					self.Floor.Height = ply:GetPos().z - 2
+				end
+				self.Floor:SetPos( Vector( ply:GetPos().x, ply:GetPos().y, self.Floor.Height ) )
+			else
+				self.Floor.Height = nil
+				self.Floor:SetPos( Vector( 0, 0, 0 ) ) -- Lets just hope this doesn't cause issues :)
+			end
+		end,
+		Remove = function( self, ply )
+			if ( self.Floor ) then
+				self.Floor:Remove()
+				self.Floor = nil
+			end
+		end
+	}
+)
+table.insert(
+	MM_Buffs,
+	{
+		Name = "Held",
+		Description = "Held in place.",
+		Icon = "icon16/anchor.png",
+		Time = 5,
+		Team = TEAM_BOTH,
+		Debuff = true,
+		ThinkActivate = function( self, ply )
+			-- This is mostly activated by spells hitting the player
+		end,
+		Init = function( self, ply )
+			ply:SetMoveType( MOVETYPE_NONE )
+		end,
+		Think = function( self, ply )
+			
+		end,
+		Remove = function( self, ply )
+			if ( ply:IsPlayer() ) then
+				ply:SetMoveType( MOVETYPE_WALK )
+			else
+				ply:SetMoveType( MOVETYPE_VPHYSICS )
+			end
 		end
 	}
 )
