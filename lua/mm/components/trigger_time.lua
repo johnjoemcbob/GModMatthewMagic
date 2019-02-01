@@ -2,7 +2,7 @@
 local comp = {
 	Name = "TRIGGER_TIME",
 	Type = "TRIGGER",
-	ReturnType = "Number",
+	ReturnType = "None",
 	Cost = function( self, ply, args )
 		return args[1] * 10
 	end,

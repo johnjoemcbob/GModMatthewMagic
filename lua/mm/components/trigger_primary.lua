@@ -2,7 +2,7 @@
 local comp = {
 	Name = "TRIGGER_PRIMARY",
 	Type = "TRIGGER",
-	ReturnType = "Number",
+	ReturnType = "None",
 	Cost = function( self, ply, args )
 		return args[1] * 10
 	end,
@@ -11,7 +11,7 @@ local comp = {
 		local hookid = "MM_SetupMove_" .. tostring( self ) .. "_" .. tostring( ply )
 		hook.Add( "SetupMove", hookid, function( target, mv, cmd )
 			if ( target == ply and mv:KeyPressed( IN_ATTACK ) ) then
-				args[1]()
+				timer.Simple( 0.01, function() args[1]() end )
 				-- hook.Remove( "EntityTakeDamage", hookid )
 			end
 		end )

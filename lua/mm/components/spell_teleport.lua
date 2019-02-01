@@ -35,9 +35,9 @@ local comp = {
 		["Trigger"] =
 		{
 			Type = "TRIGGER",
-			RequiredType = "Number",
+			RequiredType = "None",
 			-- Value = "TRIGGER_HURT",
-			Value = { "TRIGGER_TIME", 0 },
+			Value = "TRIGGER_TIME",
 		},
 	},
 }

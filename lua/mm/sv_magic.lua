@@ -65,6 +65,18 @@ function MM_Net_Send_Map_Cell( x, y )
 	net.Broadcast()
 end
 -- From SERVER
+util.AddNetworkString( "MM_Particle" )
+function MM_Send_Particle( ply, particle, data )
+	net.Start( "MM_Particle" )
+		net.WriteString( particle )
+		net.WriteTable( data )
+	if ( ply ) then
+		net.Send( ply )
+	else
+		net.Broadcast()
+	end
+end
+-- From SERVER
 util.AddNetworkString( "MM_Invoke" )
 function MM_Net_Invoke( ply, comp )
 	net.Start( "MM_Invoke" )
@@ -83,12 +95,11 @@ util.AddNetworkString( "MM_Receive_Spell_Craft" )
 net.Receive( "MM_Receive_Spell_Craft", function( len, ply )
 	local components = net.ReadTable()
 
-	local name = ply:Nick() .. "_" .. CurTime()
-	print( "Creating spell! " .. name )
-
 	local spell = table.shallowcopy( MM_Components[string.upper( components[1] )] )
-	spell.Name = name
-	table.remove( components, 1 )
+		local name = spell.Name .. "_" .. ply:Nick() .. "_" .. CurTime()
+		print( "Creating spell! " .. name )
+		spell.Name = name
+		table.remove( components, 1 )
 	PrintTable( components )
 	for k, comp in pairs( components ) do
 		spell.SubComponents[comp.Name].Value = comp.Value

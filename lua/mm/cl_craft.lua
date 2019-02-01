@@ -12,6 +12,7 @@ local font = "TargetIDSmall"
 local textcolour = Color( 0, 0, 0, 255 )
 local backtextcolour = Color( 150, 20, 10, 255 )
 local backcolour = Color( 181, 181, 181, 255 )
+local highlightcolour = Color( 255, 255, 255, 255 )
 local iw, ih = 64, 64
 local titlebar = 22
 local iconborder = 24
@@ -41,11 +42,12 @@ end
 -- Functions
 -- <<<<<<<<<<<<<<<<
 local components = {}
-function MM_Craft_Component_Add( icon, type, name )
+function MM_Craft_Component_Add( icon, type, name, ret )
 	local comp = comp_list:Add( "DPanel" )
 	comp:SetSize( iw, ih )
 	comp.Name = name
 	comp.Type = type
+	comp.ReturnType = ret or "None"
 	comp.Paint = function( self, w, h )
 		-- Icon
 		surface.SetDrawColor( 255, 255, 255, 255 )
@@ -55,6 +57,18 @@ function MM_Craft_Component_Add( icon, type, name )
 		-- Name
 		draw.SimpleText( type, font, 0, 0, textcolour, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP )
 		draw.SimpleText( name, font, w, h, textcolour, TEXT_ALIGN_RIGHT, TEXT_ALIGN_BOTTOM )
+
+		-- Border highlight
+		if ( self:IsDragging() ) then
+			surface.SetDrawColor( highlightcolour )
+			surface.DrawRect( 0, border, border, h - border * 2 )
+			surface.DrawRect( w - border, border, border, h - border * 2 )
+			surface.DrawRect( 0, 0, w, border )
+			surface.DrawRect( 0, h - border, w, border )
+		end
+
+		-- TODO: if hovering a slot with this type then highlight it
+		
 	end
 	comp:Droppable( dropid )
 	table.insert( components, comp )
@@ -69,6 +83,7 @@ function MM_Craft_Slot_Add( type, name, x, y )
 	slot:SetPos( x, y )
 	slot.Name = name
 	slot.Type = type
+	slot.ReturnType = "None"
 	slot.Component = nil
 	slot.Slots = {}
 	slot.PaintOver = function( self, w, h )
@@ -84,6 +99,17 @@ function MM_Craft_Slot_Add( type, name, x, y )
 		surface.DrawRect( w - border, 0, border, h )
 		surface.DrawRect( 0, 0, w, border )
 		surface.DrawRect( 0, h - border, w, border )
+
+		-- Border highlight
+		for k, comp in pairs( components ) do
+			if ( comp:IsDragging() and MM_Craft_SlotCompMatch( comp, self ) ) then
+				surface.SetDrawColor( highlightcolour )
+				surface.DrawRect( 0, border, border, h - border * 2 )
+				surface.DrawRect( w - border, border, border, h - border * 2 )
+				surface.DrawRect( 0, 0, w, border )
+				surface.DrawRect( 0, h - border, w, border )
+			end
+		end
 	end
 	slot:Receiver( dropid, function( receiver, droppedpanels, isDropped, menuIndex, mouseX, mouseY )
 		if ( isDropped ) then
@@ -113,17 +139,31 @@ function MM_Craft_Slot_Leave( comp )
 end
 
 function MM_Craft_Drop_Slot( dropped, into )
-	if ( string.upper( into.Type ) == string.upper( dropped.Type ) ) then
+	if ( MM_Craft_SlotCompMatch( into, dropped ) ) then
+		-- Remove any old occupants first
+		if ( into.Component ) then
+			MM_Craft_Drop_Inv( into.Component, comp_list )
+			-- MM_Craft_Slot_Leave( into.Component )
+		end
+
+		-- Add new
 		into:Add( dropped )
 		into.Component = dropped
-		print( into )
 		dropped.Slot = into
 		dropped:SetPos( border, border )
 
+		-- Spell specific
 		if ( string.upper( dropped.Type ) == "SPELL" ) then
 			MM_Craft_Drop_Slot_Spell( dropped, into )
 		end
 	end
+end
+
+function MM_Craft_SlotCompMatch( comp, slot )
+	return (
+		( string.upper( comp.Type ) == string.upper( slot.Type ) ) and
+		( string.upper( comp.ReturnType ) == string.upper( slot.ReturnType ) )
+	)
 end
 
 function MM_Craft_Drop_Slot_Spell( dropped, into )
@@ -131,12 +171,14 @@ function MM_Craft_Drop_Slot_Spell( dropped, into )
 	local x = into:GetPos()
 	for k, comp in pairs( MM_Components[string.upper( dropped.Name )].SubComponents ) do
 		x = x + iw + border
-		local slot = MM_Craft_Slot_Add( k, comp.Type, x, border )
+		local slot = MM_Craft_Slot_Add( comp.Type, k, x, border )
+		slot.ReturnType = comp.RequiredType
 		table.insert( into.Slots, slot )
 		slot.SlotParent = into
 	end
 end
 
+-- Drop a component back into the inventory
 function MM_Craft_Drop_Inv( dropped, into )
 	into:Add( dropped )
 
@@ -146,10 +188,6 @@ function MM_Craft_Drop_Inv( dropped, into )
 end
 
 function MM_Craft_UI_Open()
-	-- TODO Subslots depend on parent slots,
-	-- IF parent slot changes then slots are removed/readded
-	-- Make sure to remove component from slots before removing and readd to inv!
-
 	slots = {}
 	components = {}
 
@@ -181,27 +219,15 @@ function MM_Craft_UI_Open()
 	craft_panel:SetSize( w, h / 2 )
 	craft_panel:DockMargin( border, border, border, border )
 	craft_panel:SetBackgroundColor( backcolour )
-	-- craft_panel:Receiver( dropid, function( receiver, droppedpanels, isDropped, menuIndex, mouseX, mouseY )
-		-- if ( isDropped ) then
-			-- for k, panel in pairs( droppedpanels ) do
-				-- craft_panel:Add( panel )
-				-- local w, h = panel:GetSize()
-				-- panel:SetPos( mouseX - w / 2, mouseY - h / 2 )
-			-- end
-		-- end
-	-- end, {} )
 
 	local bw, bh = 192, 32
 	local button_spell = vgui.Create( "DButton", backdrop )
 	button_spell:SetText( "Omg! Make spell!!" )
-	button_spell:SetSize( bw, bh )
-	button_spell:SetPos( w - bw, border / 2 + titlebar / 2 + h / 2 )
+	button_spell:SetSize( w, bh )
+	-- button_spell:SetPos( w - bw, border / 2 + titlebar / 2 + h / 2 )
+	button_spell:Dock( BOTTOM )
 	button_spell.DoClick = function()
-		print( "but1" )
-		print( slots[1] )
-		print( slots[1].Component )
 		if ( slots[1].Component == nil ) then return end
-		print( "but2" )
 
 		frame:Close()
 
@@ -210,7 +236,7 @@ function MM_Craft_UI_Open()
 		table.insert( data, slots[1].Component.Name )
 		for k, slot in pairs( slots ) do
 			if ( slot != slots[1] and slot.Component ) then
-				table.insert( data, { Name = slot.Type, Value = slot.Component.Name } )
+				table.insert( data, { Name = slot.Name, Value = slot.Component.Name } )
 			end
 		end
 		PrintTable( data )
@@ -242,22 +268,13 @@ function MM_Craft_UI_Open()
 	MM_Craft_Slot_Add( "SPELL", "Main", border, border )
 
 	-- Test with some components
-	-- MM_Craft_Component_Add( Material( "icon16/wand.png" ), "Spell", "Force" )
-	-- MM_Craft_Component_Add( Material( "icon16/clock.png" ), "Trigger", "Time" )
-	-- MM_Craft_Component_Add( Material( "icon16/clock.png" ), "Trigger", "Hurt" )
-	-- MM_Craft_Component_Add( Material( "icon16/status_online.png" ), "Target", "Self" )
-	-- MM_Craft_Component_Add( Material( "icon16/arrow_up.png" ), "Direction", "Forward" )
-	-- MM_Craft_Component_Add( Material( "icon16/arrow_up.png" ), "Direction", "Backward" )
-	-- MM_Craft_Component_Add( Material( "icon16/status_online.png" ), "Target", "Self" )
-	-- MM_Craft_Component_Add( Material( "icon16/status_online.png" ), "Target", "Self" )
-	-- MM_Craft_Component_Add( Material( "icon16/status_online.png" ), "Target", "Self" )
 	local type_icons = {
 		["SPELL"] = Material( "icon16/wand.png" ),
 		["TRIGGER"] = Material( "icon16/clock.png" ),
 		["TARGET"] = Material( "icon16/status_online.png" ),
 	}
 	for k, comp in pairs( MM_Components ) do
-		MM_Craft_Component_Add( type_icons[comp.Type], comp.Type, comp.Name )
+		MM_Craft_Component_Add( type_icons[comp.Type], comp.Type, comp.Name, comp.ReturnType )
 	end
 end
 concommand.Add( "mm_craft", MM_Craft_UI_Open )

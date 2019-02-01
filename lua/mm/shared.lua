@@ -56,6 +56,125 @@ for k, file in pairs( files ) do
 end
 
 -- <<<<<<<<<<<<<<<<
+-- Load animations
+-- <<<<<<<<<<<<<<<<
+MM_Animations = {}
+
+function MM_AddAnimation( tab )
+	MM_Animations[tab.Name] = tab
+end
+
+-- TODO don't duplicate this... make better...
+local files, directories = file.Find( "lua/mm/anims/*", "GAME" )
+for k, file in pairs( files ) do
+	print( "mm/anims/" .. file )
+	AddCSLuaFile( "mm/anims/" .. file )
+	include( "mm/anims/" .. file )
+end
+if ( SERVER ) then
+	local files = files
+	util.AddNetworkString( "MM_Files_Anims" )
+	function MM_Net_SendFiles( ply, files )
+		net.Start( "MM_Files_Anims" )
+			net.WriteTable( files )
+		net.Send( ply )
+		print( "Send file list to client" )
+	end
+	hook.Add( "PlayerInitialSpawn", "MM_PlayerInitialSpawn_Animations", function( ply )
+		MM_Net_SendFiles( ply, files )
+	end )
+end
+if ( CLIENT ) then
+	net.Receive( "MM_Files_Anims", function()
+		local files = net.ReadTable()
+		print( "Receive file list from server" )
+		PrintTable( files )
+		for k, file in pairs( files ) do
+			print( "Late mm/anims/" .. file )
+			AddCSLuaFile( "mm/anims/" .. file )
+			include( "mm/anims/" .. file )
+		end
+	end )
+end
+
+if ( SERVER ) then
+	util.AddNetworkString( "MM_Animation_Apply" )
+	util.AddNetworkString( "MM_Animation_Stop" )
+end
+local anims = {}
+function MM_ApplyAnimation( ent, name )
+	if ( SERVER ) then
+		net.Start( "MM_Animation_Apply" )
+			net.WriteEntity( ent )
+			net.WriteString( name )
+		net.Broadcast()
+	end
+	if ( CLIENT ) then
+		table.insert( anims, {
+			Animation = MM_Animations[name],
+			Data = { Entity = ent }
+		} )
+		-- Start
+		MM_Animation_ChangeState( anims[#anims].Animation, anims[#anims].Data, "Start" )
+	end
+end
+function MM_StopAnimation( ent, name )
+	if ( SERVER ) then
+		net.Start( "MM_Animation_Stop" )
+			net.WriteEntity( ent )
+			net.WriteString( name )
+		net.Broadcast()
+	end
+	if ( CLIENT ) then
+		local removeanim = nil
+			for k, anim in pairs( anims ) do
+				if ( anim.Animation == MM_Animations[name] and anim.Data.Entity == ent ) then
+					anim.Animation:Remove( anim.Animation, anim.Data )
+					removeanim = k
+					break
+				end
+			end
+		if ( removeanim ) then
+			table.remove( anims, removeanim )
+		end
+	end
+end
+if ( CLIENT ) then
+	net.Receive( "MM_Animation_Apply", function()
+		local ent = net.ReadEntity()
+		local name = net.ReadString()
+
+		MM_ApplyAnimation( ent, name )
+	end )
+	net.Receive( "MM_Animation_Stop", function()
+		local ent = net.ReadEntity()
+		local name = net.ReadString()
+
+		MM_StopAnimation( ent, name )
+	end )
+
+	function MM_Animation_ChangeState( anim, data, state )
+		print( anim.Name .. " entered state " .. state )
+		if ( data.State and anim.States[data.State].Exit ) then
+			anim.States[data.State]:Exit( anim, data )
+		end
+		data.State = state
+		data.StateTime = 0
+		if ( anim.States[data.State].Enter ) then
+			anim.States[data.State]:Enter( anim, data )
+		end
+	end
+	hook.Add( "Think", "MM_Think_Animation", function()
+		for k, anim in pairs( anims ) do
+			anim.Data.StateTime = anim.Data.StateTime + FrameTime()
+			if ( anim.Animation.States[anim.Data.State].Think ) then
+				anim.Animation.States[anim.Data.State]:Think( anim.Animation, anim.Data )
+			end
+		end
+	end )
+end
+
+-- <<<<<<<<<<<<<<<<
 -- Load components
 -- <<<<<<<<<<<<<<<<
 MM_Components = {}

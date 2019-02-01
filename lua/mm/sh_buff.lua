@@ -161,7 +161,7 @@ table.insert(
 			ply.LevFloor:SetModel( "models/hunter/plates/plate025x025.mdl" )
 			ply.LevFloor:SetMoveType( MOVETYPE_NONE )
 			ply.LevFloor:Spawn()
-			-- self.Floor:SetNoDraw( true )
+			ply.LevFloor:SetNoDraw( true )
 			local phys = ply.LevFloor:GetPhysicsObject()
 			if ( phys and phys:IsValid() ) then
 				phys:EnableMotion( false )
@@ -169,6 +169,9 @@ table.insert(
 			ply.LevFloor.Height = ply:GetPos().z - 2
 		end,
 		Think = function( self, ply )
+			if ( ply:IsOnGround() ) then
+				ply.LevFloor.Height = math.max( ply.LevFloor.Height, ply:GetPos().z - 2 )
+			end
 			ply.LevFloor:SetPos( Vector( ply:GetPos().x, ply:GetPos().y, ply.LevFloor.Height ) )
 		end,
 		Remove = function( self, ply )
@@ -236,6 +239,7 @@ table.insert(
 		end,
 		Init = function( self, ply )
 			ply:SetMoveType( MOVETYPE_NONE )
+			MM_ApplyAnimation( ply, "ChainWrap" )
 		end,
 		Think = function( self, ply )
 			
@@ -246,6 +250,7 @@ table.insert(
 			else
 				ply:SetMoveType( MOVETYPE_VPHYSICS )
 			end
+			MM_StopAnimation( ply, "ChainWrap" )
 		end
 	}
 )
