@@ -29,7 +29,8 @@ local anim = {
 					wing:SetAngles( anim:GetAttachAngle( anim, data, k ) )
 
 					-- Grow to scale
-					MM_RenderScale( wing, LerpVector( self.StateTime / data.StateTime, Vector( 0, 0, 0 ), Vector( 1, 1, 1 ) ) )
+					print( data.StateTime / self.StateTime )
+					MM_RenderScale( wing, LerpVector( data.StateTime / self.StateTime, Vector( 0, 0, 0 ), Vector( 1, 1, 1 ) ) )
 				end
 
 				-- Next state
@@ -47,9 +48,13 @@ local anim = {
 			end,
 			Think = function( self, anim, data )
 				for k, wing in pairs( data.Wings ) do
-					wing:SetPos( anim:GetAttachPoint( anim, data, k ) )
+					local prog = ( 1 - ( self.StateTime / data.StateTime ) )
+
+					local pos = anim:GetAttachPoint( anim, data, k )
+						pos = pos + data.Entity:GetUp() * -10
+					wing:SetPos( pos )
 					local ang = anim:GetAttachAngle( anim, data, k )
-					ang:RotateAroundAxis( data.Entity:GetRight(), ( 1 - ( self.StateTime / data.StateTime ) ) * 2 )
+						ang:RotateAroundAxis( data.Entity:GetRight(), prog * -20 )
 					wing:SetAngles( ang )
 				end
 
@@ -62,7 +67,7 @@ local anim = {
 			end,
 		},
 		Shrink = {
-			StateTime = 0.01,
+			StateTime = 0.1,
 			Enter = function( self, anim, data )
 				
 			end,
@@ -72,7 +77,8 @@ local anim = {
 					wing:SetAngles( anim:GetAttachAngle( anim, data, k ) )
 
 					-- Grow to scale
-					MM_RenderScale( wing, LerpVector( 1 - ( self.StateTime / data.StateTime ), Vector( 0, 0, 0 ), Vector( 1, 1, 1 ) ) )
+					MM_RenderScale( wing, LerpVector( 1 - ( data.StateTime / self.StateTime ), Vector( 0, 0, 0 ), Vector( 1, 1, 1 ) ) )
+					-- MM_RenderScale( wing, LerpVector( 1 - ( self.StateTime / data.StateTime ), Vector( 0, 0, 0 ), Vector( 1, 1, 1 ) ) )
 				end
 
 				if ( data.StateTime >= self.StateTime ) then
