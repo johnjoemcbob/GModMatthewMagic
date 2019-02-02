@@ -12,6 +12,7 @@ local comp = {
 			local ent = MM_InvokeComponent( ply, self.SubComponents["Teleportee"].Value )
 			local pos = MM_InvokeComponent( ply, self.SubComponents["Target"].Value )
 			ent:SetPos( pos )
+			MM_ApplyAnimation( ent, "Disappear" )
 			MM_Net_Invoke( ent, self.Name .. " " .. ent:Nick() .. " because " .. trigger[1] )
 		end
 		MM_InvokeComponent( ply, trigger, { invoke } )

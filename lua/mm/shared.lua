@@ -164,6 +164,15 @@ if ( CLIENT ) then
 			anim.States[data.State]:Enter( anim, data )
 		end
 	end
+	function MM_Animation_Remove( anim, data )
+		for k, v in pairs( anims ) do
+			if ( anims.Data == data ) then
+				print( "Remove anim success" )
+				table.remove( anims, k )
+				return
+			end
+		end
+	end
 	hook.Add( "Think", "MM_Think_Animation", function()
 		for k, anim in pairs( anims ) do
 			anim.Data.StateTime = anim.Data.StateTime + FrameTime()

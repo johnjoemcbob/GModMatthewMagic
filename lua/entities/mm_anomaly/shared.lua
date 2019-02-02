@@ -8,4 +8,4 @@ ENT.Instructions = ""
 ENT.Spawnable = false
 ENT.AdminSpawnable = false
 
-ENT.Range = 1000
+ENT.Range = 500

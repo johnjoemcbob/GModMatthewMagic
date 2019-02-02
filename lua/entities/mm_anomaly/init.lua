@@ -26,7 +26,7 @@ function ENT:Initialize()
 end
 
 function ENT:Think()
-	util.ScreenShake( self:GetPos(), 5, 5, 10, self.Range )
+	util.ScreenShake( self:GetPos(), 5, 5, 1, self.Range )
 
 	for k, ent in pairs( ents.FindInSphere( self:GetPos(), self.Range ) ) do
 		if ( ent:IsPlayer() ) then
