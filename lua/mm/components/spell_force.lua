@@ -11,7 +11,7 @@ local comp = {
 			local pos = MM_InvokeComponent( ply, self.SubComponents["Position"].Value )
 			local dir = ( pos - ent:EyePos() ):GetNormalized()
 			ent:SetVelocity( ent:GetVelocity() + dir * 1000 )
-			MM_Net_Invoke( ent, self.Name .. " " .. ent:Nick() .. " because " .. trigger )
+			MM_Net_Invoke( ent, self.Name .. " " .. tostring( ent:EntIndex() ) .. " because " .. trigger )
 		end
 		MM_InvokeComponent( ply, trigger, { invoke } )
 	end,
@@ -26,7 +26,7 @@ local comp = {
 		-- Dir to go to
 		["Position"] =
 		{
-			Type = "TARGET",
+			Type = "POSITION",
 			RequiredType = "Position",
 			Value = "TARGET_EYE_TRACE",
 		},

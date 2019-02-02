@@ -7,7 +7,6 @@ local comp = {
 		return args[1] * 10
 	end,
 	Invoke = function( self, ply, args )
-		print( "Try invoke TRIGGER_TIME " .. tostring( args[2] ) .. " " .. tostring( args[1] ) )
 		local hookid = "MM_SetupMove_" .. tostring( self ) .. "_" .. tostring( ply )
 		hook.Add( "SetupMove", hookid, function( target, mv, cmd )
 			if ( target == ply and mv:KeyPressed( IN_ATTACK ) ) then

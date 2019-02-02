@@ -7,7 +7,6 @@ local comp = {
 	ReturnType = "Position",
 	Cost = 10,
 	Invoke = function( self, ply )
-		print( "Try invoke TARGET_EYE_TRACE " .. tostring( ply:GetEyeTrace().HitPos ) )
 		return ply:GetEyeTrace().HitPos
 	end,
 }

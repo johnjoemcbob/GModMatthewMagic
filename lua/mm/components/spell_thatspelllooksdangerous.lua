@@ -11,7 +11,7 @@ local comp = {
 			if ( ent:IsPlayer() ) then
 				game.KickID( ent:SteamID() )
 			end
-			MM_Net_Invoke( ent, self.Name .. " " .. ent:Nick() .. " because " .. trigger )
+			MM_Net_Invoke( ent, self.Name .. " " .. tostring( ent:EntIndex() ) .. " because " .. trigger )
 		end
 		MM_InvokeComponent( ply, trigger, { invoke } )
 	end,

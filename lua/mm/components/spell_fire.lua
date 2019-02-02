@@ -8,7 +8,7 @@ local comp = {
 		local invoke = function()
 			local ent = MM_InvokeComponent( ply, self.SubComponents["Target"].Value )
 			ent:AddBuff( 8 )
-			MM_Net_Invoke( ent, self.Name .. " " .. ent:Nick() .. " because " .. trigger )
+			MM_Net_Invoke( ent, self.Name .. " " .. tostring( ent:EntIndex() ) .. " because " .. trigger )
 		end
 		MM_InvokeComponent( ply, trigger, { invoke } )
 	end,

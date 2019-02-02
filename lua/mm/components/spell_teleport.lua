@@ -13,7 +13,7 @@ local comp = {
 			local pos = MM_InvokeComponent( ply, self.SubComponents["Target"].Value )
 			ent:SetPos( pos )
 			MM_ApplyAnimation( ent, "Disappear" )
-			MM_Net_Invoke( ent, self.Name .. " " .. ent:Nick() .. " because " .. trigger[1] )
+			MM_Net_Invoke( ent, self.Name .. " " .. tostring( ent:EntIndex() ) .. " because " .. trigger[1] )
 		end
 		MM_InvokeComponent( ply, trigger, { invoke } )
 	end,
@@ -28,7 +28,7 @@ local comp = {
 		-- Pos to go to
 		["Target"] =
 		{
-			Type = "TARGET",
+			Type = "POSITION",
 			RequiredType = "Position",
 			Value = "TARGET_EYE_TRACE",
 		},

@@ -7,7 +7,6 @@ local comp = {
 	ReturnType = "None",
 	Cost = 100,
 	Invoke = function( self, ply, args )
-		print( "Try invoke TRIGGER_HURT " .. tostring( args[2] ) .. " " .. tostring( args[1] ) )
 		local hookid = "MM_EntityTakeDamage_" .. tostring( self ) .. "_" .. tostring( ply )
 		hook.Add( "EntityTakeDamage", hookid, function( target, dmginfo )
 			if ( target == ply ) then

@@ -29,7 +29,6 @@ local anim = {
 					wing:SetAngles( anim:GetAttachAngle( anim, data, k ) )
 
 					-- Grow to scale
-					print( data.StateTime / self.StateTime )
 					MM_RenderScale( wing, LerpVector( data.StateTime / self.StateTime, Vector( 0, 0, 0 ), Vector( 1, 1, 1 ) ) )
 				end
 

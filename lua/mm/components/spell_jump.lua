@@ -10,10 +10,14 @@ local comp = {
 			local mag = 50
 			-- if ( ent:IsOnGround() ) then
 				mag = 500
+				local phys = ent:GetPhysicsObject()
+				if ( !ent:IsPlayer() and phys and phys:IsValid() ) then
+					phys:SetVelocity( Vector( ent:GetVelocity().x, ent:GetVelocity().y, mag ) )
+				end
 			-- end
 			ent:SetVelocity( Vector( ent:GetVelocity().x, ent:GetVelocity().y, mag ) )
 			MM_ApplyAnimation( ent, "WingFlap" )
-			MM_Net_Invoke( ent, self.Name .. " " .. ent:Nick() .. " because " .. trigger )
+			MM_Net_Invoke( ent, self.Name .. " " .. tostring( ent:EntIndex() ) .. " because " .. trigger )
 		end
 		MM_InvokeComponent( ply, trigger, { invoke } )
 	end,

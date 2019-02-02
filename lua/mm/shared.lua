@@ -74,14 +74,14 @@ end
 if ( SERVER ) then
 	local files = files
 	util.AddNetworkString( "MM_Files_Anims" )
-	function MM_Net_SendFiles( ply, files )
+	function MM_Net_SendAnimFiles( ply, files )
 		net.Start( "MM_Files_Anims" )
 			net.WriteTable( files )
 		net.Send( ply )
 		print( "Send file list to client" )
 	end
 	hook.Add( "PlayerInitialSpawn", "MM_PlayerInitialSpawn_Animations", function( ply )
-		MM_Net_SendFiles( ply, files )
+		MM_Net_SendAnimFiles( ply, files )
 	end )
 end
 if ( CLIENT ) then

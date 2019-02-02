@@ -17,6 +17,12 @@ local iw, ih = 64, 64
 local titlebar = 22
 local iconborder = 24
 local border = 8
+local type_icons = {
+	["SPELL"] = Material( "icon16/wand.png" ),
+	["TRIGGER"] = Material( "icon16/clock.png" ),
+	["TARGET"] = Material( "icon16/status_online.png" ),
+	["POSITION"] = Material( "icon16/world.png" ),
+}
 
 -- <<<<<<<<<<<<<<<<
 -- Net
@@ -92,6 +98,11 @@ function MM_Craft_Slot_Add( type, name, x, y )
 			draw.SimpleText( type, font, border, border, backtextcolour, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP )
 			draw.SimpleText( name, font, w - border, h - border, backtextcolour, TEXT_ALIGN_RIGHT, TEXT_ALIGN_BOTTOM )
 		end
+
+		-- Icon
+		surface.SetDrawColor( 255, 255, 255, 100 )
+		surface.SetMaterial( type_icons[type] )
+		surface.DrawTexturedRect( iconborder / 2, iconborder / 2, w - iconborder, h - iconborder )
 
 		-- Border
 		surface.SetDrawColor( backtextcolour )
@@ -268,11 +279,6 @@ function MM_Craft_UI_Open()
 	MM_Craft_Slot_Add( "SPELL", "Main", border, border )
 
 	-- Test with some components
-	local type_icons = {
-		["SPELL"] = Material( "icon16/wand.png" ),
-		["TRIGGER"] = Material( "icon16/clock.png" ),
-		["TARGET"] = Material( "icon16/status_online.png" ),
-	}
 	for k, comp in pairs( MM_Components ) do
 		MM_Craft_Component_Add( type_icons[comp.Type], comp.Type, comp.Name, comp.ReturnType )
 	end
